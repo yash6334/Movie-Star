@@ -111,6 +111,7 @@ class _NoteButton extends StatelessWidget {
       color: _color,
       minWidth: 100,
       enableFeedback: true,
+      elevation: 5,
     );
   }
 }
