@@ -39,7 +39,7 @@ class _AddPageState extends State<AddPage> {
             Text(widget.noteMode == NoteMode.Adding ? "Add Note" : "Edit Note"),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(40),
+        padding: const EdgeInsets.only(left: 40, right: 40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
