@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:notes_app/Note_provider.dart';
-import 'package:notes_app/inheritedWidgets/note_inherited_widget.dart';
 
 enum NoteMode {
   Adding,
@@ -9,9 +8,9 @@ enum NoteMode {
 
 class AddPage extends StatefulWidget {
   final NoteMode noteMode;
-  final Map<String, dynamic> note;
+  final Map<String, dynamic> movie;
 
-  AddPage(this.noteMode, this.note);
+  AddPage(this.noteMode, this.movie);
 
   @override
   _AddPageState createState() => _AddPageState();
@@ -25,8 +24,8 @@ class _AddPageState extends State<AddPage> {
   @override
   void didChangeDependencies() {
     if (widget.noteMode == NoteMode.Editing) {
-      _titleController.text = widget.note['title'];
-      _textController.text = widget.note['text'];
+      _titleController.text = widget.movie['title'];
+      _textController.text = widget.movie['text'];
     }
     super.didChangeDependencies();
   }
@@ -36,7 +35,7 @@ class _AddPageState extends State<AddPage> {
     return Scaffold(
       appBar: AppBar(
         title:
-            Text(widget.noteMode == NoteMode.Adding ? "Add Note" : "Edit Note"),
+            Text(widget.noteMode == NoteMode.Adding ? "Add Movie" : "Edit Movie"),
       ),
       body: Padding(
         padding: const EdgeInsets.only(left: 40, right: 40),
@@ -45,11 +44,11 @@ class _AddPageState extends State<AddPage> {
           children: <Widget>[
             TextField(
               controller: _titleController,
-              decoration: InputDecoration(hintText: 'Note Title'),
+              decoration: InputDecoration(hintText: 'Movie Title'),
             ),
             TextField(
               controller: _textController,
-              decoration: InputDecoration(hintText: 'Note Text'),
+              decoration: InputDecoration(hintText: 'Movie Text'),
               maxLines: 10,
             ),
             SizedBox(
@@ -72,7 +71,7 @@ class _AddPageState extends State<AddPage> {
                         'title': title,
                         'text': text,
                       },
-                      widget.note['id'],
+                      widget.movie['id'],
                     );
                   }
                   Navigator.pop(context);
@@ -80,7 +79,7 @@ class _AddPageState extends State<AddPage> {
                 widget.noteMode == NoteMode.Editing
                     ? _NoteButton("Delete", Colors.green, () async {
                         //_notes.removeAt(widget.index);
-                        await NoteProvider.deleteNode(widget.note['id']);
+                        await NoteProvider.deleteNode(widget.movie['id']);
                         Navigator.pop(context);
                       })
                     : Container(),

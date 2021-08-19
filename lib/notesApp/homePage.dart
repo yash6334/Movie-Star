@@ -13,15 +13,14 @@ enum choice {
   list,
   grid,
 }
+
 choice c = choice.list;
 
 class _HomePageState extends State<HomePage> {
-  //List<Map<String, String>> get _notes => NoteInheritedWidget.of(context).notes;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       drawer: Drawer(
           elevation: 5,
           child: ListView(
@@ -62,13 +61,16 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               ListTile(
-                title: Text("All Notes"),
-                trailing: Icon(Icons.arrow_right),
-                onTap: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => HomePage())),
-              ),
+                  title: Text("All Movies"),
+                  trailing: Icon(Icons.arrow_right),
+                  onTap: () {
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomePage()),
+                        (Route<dynamic> route) => false);
+                  }),
               ListTile(
-                title: Text("Add Notes"),
+                title: Text("Add movie"),
                 trailing: Icon(Icons.arrow_right),
                 onTap: () => Navigator.push(
                     context,
@@ -84,7 +86,7 @@ class _HomePageState extends State<HomePage> {
             ],
           )),
       appBar: AppBar(
-        title: Text('Notes App'),
+        title: Text('Movie Star'),
         actions: <Widget>[
           PopupMenuButton<choice>(
             itemBuilder: (context) {
@@ -113,38 +115,16 @@ class _HomePageState extends State<HomePage> {
               if (c == choice.grid) {
                 return GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2, childAspectRatio: 1),
+                      crossAxisCount: 2, childAspectRatio: 0.77),
                   itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () async {
-                        await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  AddPage(NoteMode.Editing, _notes[index]),
-                            ));
-                        setState(() {});
-                      },
-                      child: _ListCard(index, _notes),
-                    );
+                    return _GridCard(index, _notes, this.setState);
                   },
                   itemCount: _notes.length,
                 );
               } else {
                 return ListView.builder(
                   itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () async {
-                        await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  AddPage(NoteMode.Editing, _notes[index]),
-                            ));
-                        setState(() {});
-                      },
-                      child: _ListCard(index, _notes),
-                    );
+                    return _ListCard(index, _notes, this.setState);
                   },
                   itemCount: _notes.length,
                 );
@@ -174,47 +154,161 @@ class _HomePageState extends State<HomePage> {
 class _ListCard extends StatelessWidget {
   final int index;
   final List<Map<String, dynamic>> notes;
-  _ListCard(this.index, this.notes);
+  final Function _setState;
+
+  _ListCard(this.index, this.notes, this._setState);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(5.0),
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.94,
       child: Card(
-        elevation: 5,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(0.0),
         ),
-        child: Container(
-          decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                    spreadRadius: 2,
-                    color: Colors.lightBlueAccent[400],
-                    blurRadius: 10,
-                    offset: Offset(6, 6))
-              ],
-              borderRadius: BorderRadius.circular(10),
-              image: DecorationImage(
-                  image: NetworkImage(
-                      "https://previews.123rf.com/images/kumer/kumer1502/kumer150200047/36425320-vector-high-resolution-blank-white-watercolor-paper-texture.jpg"),
-                  fit: BoxFit.fill)),
-          child: Stack(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(
-                    top: 13, bottom: 13, left: 20, right: 22),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    _NoteTitle(notes[index]['title']),
-                    SizedBox(
-                      height: 5,
-                    ),
-                    _NoteText(notes[index]['text']),
-                  ],
+        color: Colors.white70,
+        elevation: 10,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.28,
+                  maxHeight: MediaQuery.of(context).size.width * 0.28,
                 ),
+                child: Image.asset('assets/try2.jpg', fit: BoxFit.fill),
               ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 10, 0, 0),
+                    child: Text(
+                      notes[index]['title'],
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(5, 10, 0, 0),
+                    child: Text(
+                      notes[index]['text'],
+                      style: TextStyle(
+                        fontSize: 12,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: <Widget>[
+                ElevatedButton(
+                  onPressed: () async {
+                    await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              AddPage(NoteMode.Editing, notes[index]),
+                        ));
+                    _setState(() {});
+                  },
+                  child: Text("Edit"),
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.green)),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    await NoteProvider.deleteNode(notes[index]['id']);
+                    _setState(() {});
+                  },
+                  child: Text("Delete"),
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.red)),
+                )
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GridCard extends StatelessWidget {
+  final int index;
+  final List<Map<String, dynamic>> notes;
+  final Function _setState;
+
+  _GridCard(this.index, this.notes, this._setState);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(0.0),
+        ),
+        color: Colors.white70,
+        elevation: 10,
+        child: Center(
+          child: Column(
+            children: [
+              Text(
+                notes[index]['title'],
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              Image.asset('assets/try2.jpg', fit: BoxFit.fill),
+              Text(
+                notes[index]['text'],
+                overflow: TextOverflow.ellipsis,
+              ),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 10,
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                AddPage(NoteMode.Editing, notes[index]),
+                          ));
+                      _setState(() {});
+                    },
+                    child: Text("Edit"),
+                    style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all(Colors.green)),
+                  ),
+                  SizedBox(
+                    width: 30,
+                  ),
+                  ElevatedButton(
+                     onPressed: () async {
+                    await NoteProvider.deleteNode(notes[index]['id']);
+                    _setState(() {});
+                  },
+                  child: Text("Delete"),
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.red)),
+                  )
+                ],
+              )
             ],
           ),
         ),
@@ -225,6 +319,7 @@ class _ListCard extends StatelessWidget {
 
 class _NoteTitle extends StatelessWidget {
   final String _title;
+
   _NoteTitle(this._title);
 
   @override
@@ -241,6 +336,7 @@ class _NoteTitle extends StatelessWidget {
 
 class _NoteText extends StatelessWidget {
   final String _text;
+
   _NoteText(this._text);
 
   @override
