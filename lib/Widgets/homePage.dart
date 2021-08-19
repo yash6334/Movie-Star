@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:notes_app/notesApp/addPage.dart';
-import 'package:notes_app/Note_provider.dart';
+import 'package:notes_app/Widgets/Drawer.dart';
+import 'package:notes_app/Widgets/addPage.dart';
+import 'package:notes_app/Data/Note_provider.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -21,70 +22,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      drawer: Drawer(
-          elevation: 5,
-          child: ListView(
-            children: <Widget>[
-              UserAccountsDrawerHeader(
-                otherAccountsPictures: <Widget>[
-                  Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: AssetImage("assets/try1.jpeg"),
-                          fit: BoxFit.cover),
-                      borderRadius: BorderRadius.circular(50),
-                      border: Border.all(),
-                    ),
-                  ),
-                  Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: AssetImage("assets/try2.jpg"),
-                          fit: BoxFit.cover),
-                      borderRadius: BorderRadius.circular(50),
-                      border: Border.all(),
-                    ),
-                  ),
-                ],
-                accountName: Text("Yash Agarwal"),
-                accountEmail: Text("yash6334@gmail.com"),
-                currentAccountPicture: Container(
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                        image: AssetImage("assets/try.jpg"), fit: BoxFit.cover),
-                    borderRadius: BorderRadius.circular(50),
-                    border: Border.all(),
-                  ),
-                ),
-              ),
-              ListTile(
-                  title: Text("All Movies"),
-                  trailing: Icon(Icons.arrow_right),
-                  onTap: () {
-                    Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (context) => HomePage()),
-                        (Route<dynamic> route) => false);
-                  }),
-              ListTile(
-                title: Text("Add movie"),
-                trailing: Icon(Icons.arrow_right),
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => AddPage(NoteMode.Adding, null))),
-              ),
-              Divider(color: Colors.blue),
-              ListTile(
-                title: Text("Close"),
-                trailing: Icon(Icons.close),
-                onTap: () => exit(0),
-              ),
-            ],
-          )),
+      drawer: PersonalisedDrawer(),
       appBar: AppBar(
         title: Text('Movie Star'),
         actions: <Widget>[
@@ -178,7 +116,13 @@ class _ListCard extends StatelessWidget {
                   maxWidth: MediaQuery.of(context).size.width * 0.28,
                   maxHeight: MediaQuery.of(context).size.width * 0.28,
                 ),
-                child: Image.asset('assets/try2.jpg', fit: BoxFit.fill),
+                child: notes[index]['image'] == null
+                    ? Image.asset('assets/noImage.jpg', width: 85, height: 100,)
+                    : Image.file(
+                        File(notes[index]['image']),
+                        fit: BoxFit.cover,
+                        width: 85, height: 100,
+                      ),
               ),
             ),
             Column(
@@ -202,7 +146,7 @@ class _ListCard extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(5, 10, 0, 0),
                     child: Text(
-                      notes[index]['text'],
+                      "- " + notes[index]['text'],
                       style: TextStyle(
                         fontSize: 12,
                       ),
@@ -270,9 +214,20 @@ class _GridCard extends StatelessWidget {
                 notes[index]['title'],
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
-              Image.asset('assets/try2.jpg', fit: BoxFit.fill),
+              notes[index]['image'] == null
+                  ? Image.asset(
+                      'assets/noImage.jpg',
+                      height: 155,
+                      width: 140,
+                    )
+                  : Image.file(
+                      File(notes[index]['image']),
+                      fit: BoxFit.cover,
+                      height: 155,
+                      width: 140,
+                    ),
               Text(
-                notes[index]['text'],
+                "- " + notes[index]['text'],
                 overflow: TextOverflow.ellipsis,
               ),
               Row(
@@ -299,13 +254,13 @@ class _GridCard extends StatelessWidget {
                     width: 30,
                   ),
                   ElevatedButton(
-                     onPressed: () async {
-                    await NoteProvider.deleteNode(notes[index]['id']);
-                    _setState(() {});
-                  },
-                  child: Text("Delete"),
-                  style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Colors.red)),
+                    onPressed: () async {
+                      await NoteProvider.deleteNode(notes[index]['id']);
+                      _setState(() {});
+                    },
+                    child: Text("Delete"),
+                    style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(Colors.red)),
                   )
                 ],
               )

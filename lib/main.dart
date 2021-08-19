@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'notesApp/homePage.dart';
+import 'Widgets/homePage.dart';
 
 main(List<String> args) {
   runApp(App());

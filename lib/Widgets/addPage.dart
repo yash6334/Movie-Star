@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:notes_app/Note_provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:notes_app/Data/Note_provider.dart';
 
 enum NoteMode {
   Adding,
@@ -19,13 +22,24 @@ class AddPage extends StatefulWidget {
 class _AddPageState extends State<AddPage> {
   TextEditingController _titleController = TextEditingController();
   TextEditingController _textController = TextEditingController();
-  //List<Map<String, String>> get _notes => NoteInheritedWidget.of(context).notes;
+
+  File _image = null;
+
+  Future getImage() async {
+    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    setState(() {
+      _image = File(image.path);
+      print(_image.path);
+    });
+  }
 
   @override
   void didChangeDependencies() {
     if (widget.noteMode == NoteMode.Editing) {
       _titleController.text = widget.movie['title'];
       _textController.text = widget.movie['text'];
+      _image = File(widget.movie['image']);
     }
     super.didChangeDependencies();
   }
@@ -34,21 +48,33 @@ class _AddPageState extends State<AddPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:
-            Text(widget.noteMode == NoteMode.Adding ? "Add Movie" : "Edit Movie"),
+        title: Text(
+            widget.noteMode == NoteMode.Adding ? "Add Movie" : "Edit Movie"),
       ),
       body: Padding(
         padding: const EdgeInsets.only(left: 40, right: 40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            GestureDetector(
+              child: CircleAvatar(
+                  backgroundImage: _image == null ? null : FileImage(_image),
+                  child: _image == null
+                      ? Text(
+                          "+",
+                          style: TextStyle(fontSize: 28),
+                        )
+                      : Text(""),
+                  minRadius: 30),
+              onTap: () => getImage(),
+            ),
             TextField(
               controller: _titleController,
-              decoration: InputDecoration(hintText: 'Movie Title'),
+              decoration: InputDecoration(hintText: 'Movie Name'),
             ),
             TextField(
               controller: _textController,
-              decoration: InputDecoration(hintText: 'Movie Text'),
+              decoration: InputDecoration(hintText: 'Movie Director'),
               maxLines: 10,
             ),
             SizedBox(
@@ -60,21 +86,24 @@ class _AddPageState extends State<AddPage> {
                 _NoteButton("Save", Colors.blue, () async {
                   String title = _titleController.text;
                   String text = _textController.text;
-                  if (widget?.noteMode == NoteMode.Adding) {
-                    await NoteProvider.insertedNote({
-                      'title': title,
-                      'text': text,
-                    });
-                  } else {
-                    await NoteProvider.updateNote(
-                      {
-                        'title': title,
-                        'text': text,
-                      },
-                      widget.movie['id'],
-                    );
+                  String image = _image?.path;
+                  print(title + "," + text);
+                  if (title.isNotEmpty && text.isNotEmpty) {
+                    if (widget?.noteMode == NoteMode.Adding) {
+                      await NoteProvider.insertedNote(
+                          {'title': title, 'text': text, 'image': image});
+                    } else {
+                      await NoteProvider.updateNote(
+                        {'title': title, 'text': text, 'image': image},
+                        widget.movie['id'],
+                      );
+                    }
+
+                    Navigator.pop(context); 
+                  }else{
+                    _titleController.text = "Please enter a name";
+                    _textController.text = "Please enter Director name";
                   }
-                  Navigator.pop(context);
                 }),
                 widget.noteMode == NoteMode.Editing
                     ? _NoteButton("Delete", Colors.green, () async {
